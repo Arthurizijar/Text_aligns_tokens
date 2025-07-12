@@ -67,10 +67,10 @@ def load_model(args, model_name):
         tokenizer.pad_token_id = 0
         tokenizer.padding_side = "left"
     elif model_name in ["llama2", "llama2_eol"]:
-        tokenizer = AutoTokenizer.from_pretrained(args.llama_path)
-        model = AutoModelForCausalLM.from_pretrained(args.llama_path,
+        tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+        model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf",
                                                      torch_dtype=torch.bfloat16,
-                                                     device_map="cuda" if torch.cuda.is_available() else "cpu",).eval()
+                                                     device_map="cuda" if torch.cuda.is_available() else "cpu").eval()
         tokenizer.pad_token_id = 0
         tokenizer.padding_side = "left"
     elif model_name == "gte":
@@ -130,50 +130,6 @@ def load_model(args, model_name):
     return model, tokenizer, doc_model, doc_tokenizer
 
 
-
-
-# def get_embedding_weights(model_name, model):
-#     if model_name == "bert":
-#         return model.embeddings.word_embeddings.weight.data
-#     elif model_name == "prompt_bert":
-#         return model.bert.embeddings.word_embeddings.weight.data
-#     elif model_name in ["prompt_bert_sup", "prompt_bert_unsup"]:
-#         return model.embeddings.word_embeddings.weight.data
-#     elif model_name == "simcse":
-#         return model.embeddings.word_embeddings.weight.data
-#     elif model_name == "sentence_t5":
-#         # print(model._modules.keys())
-#         return model._modules['0'].auto_model.shared.weight.data
-#     elif model_name == "contriever":
-#         return model.embeddings.word_embeddings.weight.data
-#     elif model_name == "dpr":
-#         return model.question_encoder.bert_model.embeddings.word_embeddings.weight.data
-#     elif model_name in ["gpt_neo", "sgpt_nli", "sgpt_msmarco"]:
-#         return model.wte.weight
-#     elif model_name in ["opt_eol", "opt_eol_icl"]:
-#         return model.model.decoder.get_input_embeddings().weight.data
-#     elif model_name == "gte":
-#         return model.embeddings.word_embeddings.weight.data
-#     elif model_name == "e5":
-#         return model.embeddings.word_embeddings.weight.data
-#     elif model_name == "llama_eol_cse":
-#         return model.model.model.embed_tokens.weight.data
-#     elif model_name == "opt_eol_cse":
-#         return model.model.model.decoder.get_input_embeddings().weight.data
-#     elif model_name == "opt_eol_cse_ours":
-#         return model.model.model.decoder.get_input_embeddings().weight.data
-#     elif model_name == "syncse":
-#         return model.embeddings.word_embeddings.weight.data
-#     elif model_name == "mistral":
-#         return model.embed_tokens.weight.data.float()
-#     elif model_name in ["llm2vec_mistral", "llm2vec_mistral_sup"]:
-#         return model.model.embed_tokens.weight.data.float()
-#     elif model_name in ["mistral", "gritlm"]:
-#         return model.model.model.embed_tokens.weight.data.float()
-#     else:
-#         raise NotImplementedError
-
-
 def load_decoder_layer(args, model=None):
     model_name = args.model
     if model_name in ["bert", "prompt_bert", "prompt_bert_sup", "prompt_bert_unsup", "simcse", "contriever", "dpr", "gte", "e5", "spider"]:
@@ -187,7 +143,7 @@ def load_decoder_layer(args, model=None):
         return model.lm_head
     elif model_name in ["opt_eol_cse", "llama_eol_cse", "mistral", "gritlm"]:
         return model.model.lm_head
-    elif model_name in ["sgpt_nli", "sgpt_msmarco", "llm2vec_mistral", "llm2vec_mistral_sup", "llm2vec_llama2", "llm2vec_llama2_sup", "e5_mistral"]:
+    elif model_name in ["sgpt_nli", "sgpt_msmarco", "llm2vec_mistral_unsup", "llm2vec_mistral_sup", "e5_mistral"]:
         weights_path = args.weight_dir + f"{model_name}_linear.pth"
         if os.path.exists(weights_path):
             import torch.nn as nn
@@ -199,10 +155,8 @@ def load_decoder_layer(args, model=None):
         else:
             if model_name in ["e5_mistral"]:
                 temp_model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-v0.1", low_cpu_mem_usage=True).cuda().eval()
-            elif model_name in ["llm2vec_mistral", "llm2vec_mistral_sup"]:
+            elif model_name in ["llm2vec_mistral_unsup", "llm2vec_mistral_sup"]:
                 temp_model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", low_cpu_mem_usage=True).cuda().eval()
-            elif model_name in ["llm2vec_llama2", "llm2vec_llama2_sup"]:
-                temp_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf", low_cpu_mem_usage=True).cuda().eval()
             elif model_name in ["sgpt_nli", "sgpt_msmarco"]:
                 temp_model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B").cuda().eval()
             else:
@@ -210,14 +164,3 @@ def load_decoder_layer(args, model=None):
             torch.save(temp_model.lm_head.state_dict(), weights_path)
     else:
         raise NotImplementedError
-
-
-# def load_mlm_head(model_name):
-#     assert model_name in ["bert", "simcse", "contriever", "gte", "e5", "dpr", "syncse", "prompt_bert", "mpnet", "spider"]
-#     if model_name == "syncse":
-#         mlm_head = AutoModelForMaskedLM.from_pretrained("roberta-large").cuda().eval().lm_head
-#     elif model_name == "mpnet":
-#         mlm_head = AutoModelForMaskedLM.from_pretrained("microsoft/mpnet-base").cuda().eval().lm_head
-#     else:
-#         mlm_head = AutoModelForMaskedLM.from_pretrained("bert-base-uncased").cuda().eval().cls
-#     return mlm_head

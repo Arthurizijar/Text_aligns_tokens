@@ -8,12 +8,12 @@ def get_msmarco_data():
         for line in lines:
             json_dict = eval(line)
             id2query[json_dict['_id']] = json_dict['text']
-    with open("~/retrieval/beir/datasets/msmarco/corpus.jsonl", encoding="utf-8") as f:
+    with open("~/msmarco/corpus.jsonl", encoding="utf-8") as f:
         lines = f.readlines()
         for line in lines:
             json_dict = eval(line)
             id2doc[json_dict['_id']] = json_dict['text']
-    with open("~/retrieval/beir/datasets/msmarco/qrels/dev.tsv", encoding="utf-8") as f:
+    with open("~/msmarco/qrels/dev.tsv", encoding="utf-8") as f:
         lines = f.readlines()[:501]
         for i, line in enumerate(lines):
             if i == 0:
@@ -65,9 +65,10 @@ def get_sts_data(data_name="sts12"):
     return texts_a, texts_b
 
 
-def get_text_similarity_data(data_name):
+def load_data(data_name):
     if data_name == "sts":
         texts_a, texts_b = get_sts_data()
+        return texts_a + texts_b
     elif data_name == "msmarco":
         texts_a, texts_b = [], []
         with open("./data/msmarco/sampled500.txt", encoding="utf-8") as f:
@@ -76,6 +77,7 @@ def get_text_similarity_data(data_name):
                 query, doc = line.strip().split("\t")
                 texts_a.append(query)
                 texts_b.append(doc)
+        return texts_a + texts_b
     elif data_name == "nli":
         texts_a, texts_b = [], []
         with open("./data/nli_for_simcse.csv") as f:
@@ -87,10 +89,11 @@ def get_text_similarity_data(data_name):
                 text_list = list(line.strip().split(","))
                 texts_a.append(text_list[0])
                 texts_b.append(text_list[1])
+        return texts_a + texts_b
     elif data_name == "wiki":
         with open("./data/wiki/wiki1m_for_simcse.txt", "r") as f:
             lines = f.readlines()
         return lines
     else:
         raise NotImplementedError
-    return texts_a, texts_b
+    

@@ -235,7 +235,7 @@ def get_embeddings(model_name, model_list, data_name, texts, isdoc=False, islaye
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
         with torch.no_grad():
             embs = model(**inputs, output_hidden_states=True, return_dict=True).pooler_output
-    elif model_name in ["llm2vec_mistral", "llm2vec_mistral_sup", "llm2vec_llama2", "llm2vec_llama2_sup"]:
+    elif model_name in ["llm2vec_mistral_unsup", "llm2vec_mistral_sup"]:
         l2v = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=512)
         if not isdoc:
             instruction = "Given a web search query, retrieve relevant passages that answer the query:"

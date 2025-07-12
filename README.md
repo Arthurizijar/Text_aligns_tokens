@@ -11,21 +11,27 @@ The official code implementation of the ACL2025 paper “[A Text is Worth Severa
 conda env create -f environment.yml -n your_new_environment_name
 ```
 
-### Quick Start
-
-⚠️# If you are in mainland China, you need to configure a mirror to access Huggingface
+⚠️ If you are in Mainland China, you need to configure a mirror to access Huggingface
 
 ```bash
 export HF_ENDPOINT=https://hf-mirror.com
 ```
 
-Run the following command to produce an .xlsx file that lists each original sentence alongside the tokens aligned to its embeddings.
+### Quick Start
+
+Run the following command to produce an `.xlsx` file that lists each original sentence alongside the tokens aligned to its embeddings.
+
+```bash
+python aligned_token.py
+```
 
 Set `$model` and `$dataset` with different values to evaluate different embedders across various datasets.
 
 ```bash
-python main.py --model=$model --dataset=$dataset
+python aligned_token.py --model=$model --dataset=$dataset
 ```
+
+Note: download the `wiki` and `nli` datasets in advance from the [link](https://huggingface.co/datasets/princeton-nlp/datasets-for-simcse/tree/main) if you need them. The placement path is `data/wiki/wiki1m_for_simcse.txt` and `daya/nli/nli_for_simcse.csv` .
 
 #### Support LLM-based Embedders
 
@@ -40,8 +46,8 @@ python main.py --model=$model --dataset=$dataset
 | `llama`                 | Fill out Meta's [official form](https://docs.google.com/forms/d/e/1FAIpQLSfqNECQnMkycAp2jP4Z9TFX0cGR4uf7b_fBxjY_OjhJILlKGA/viewform) for weights |
 | `llama_eol`             | Fill out Meta's [official form](https://docs.google.com/forms/d/e/1FAIpQLSfqNECQnMkycAp2jP4Z9TFX0cGR4uf7b_fBxjY_OjhJILlKGA/viewform) for weights |
 | `llama_eol_cse`         | `royokong/prompteol-llama-7b`                                |
-| `llama2`                |                                                              |
-| `llama2_eol`            |                                                              |
+| `llama2`                | `meta-llama/Llama-2-7b-chat-hf`                              |
+| `llama2_eol`            | `meta-llama/Llama-2-7b-chat-hf`                              |
 | `mistral`               | `mistralai/Mistral-7B-Instruct-v0.2`                         |
 | `gritlm`                | `GritLM/GritLM-7B`                                           |
 | `llm2vec_mistral_sup`   | `McGill-NLP/LLM2Vec-Mistral-7B-Instruct-v2-mntp`+<br />`McGill-NLP/LLM2Vec-Mistral-7B-Instruct-v2-mntp-supervised` |
@@ -70,6 +76,7 @@ We also offer support for several embedders built on non-Transformer decoder arc
 | --dataset | Corresponding Dataset in HF         |
 | --------- | ----------------------------------- |
 | `sts`     | `princeton-nlp/datasets-for-simcse` |
+| `nli`     | `princeton-nlp/datasets-for-simcse` |
 | `msmarco` | `microsoft/ms_marco`                |
 | `wiki`    | `princeton-nlp/datasets-for-simcse` |
 
@@ -83,7 +90,7 @@ For a quick start, you can run:
 python spectral_analyze.py --analyze_type=variation
 ```
 
-<img src="fig/gpt_neo_sgpt_nli_wiki_variation.png" alt="gpt_neo_sgpt_nli_wiki_variation" style="zoom:25%;" />
+<img src="fig/gpt_neo_sgpt_nli_wiki_variation.png" alt="gpt_neo_sgpt_nli_wiki_variation" width="300px" />
 
 This figure is slightly different from the one reported in the paper because we only used 100 samples for the SVD decomposition.
 
@@ -93,7 +100,7 @@ If more precise results are needed, a larger sample size can be selected using t
 python spectral_analyze.py --analyze_type=variation --data_size=10000
 ```
 
-<img src="fig/gpt_neo_sgpt_nli_wiki10k_variation.png" alt="gpt_neo_sgpt_nli_wiki10k_variation" style="zoom:25%;" />
+<img src="fig/gpt_neo_sgpt_nli_wiki10k_variation.png" alt="gpt_neo_sgpt_nli_wiki10k_variation" width="300px" />
 
 #### 2. Contribution of different components to aligned tokens
 
@@ -105,7 +112,7 @@ python spectral_analyze.py --analyze_type=contribution
 
 Then you can get a figure as follows:
 
-<img src="fig/gpt_neo_contribution.png" alt="gpt_neo_contribution" style="zoom:16%;" />
+<img src="fig/gpt_neo_contribution.png" alt="gpt_neo_contribution" width="600px" />
 
 This image draws the text `YMCA in South Australia` by default.
 
@@ -115,7 +122,7 @@ The `text` field can be used to modify the text to be analyzed:
 python spectral_analyze.py --analyze_type=contribution --text="I like apple and banana"
 ```
 
-<img src="fig/gpt_neo_contribution2.png" alt="gpt_neo_contribution2" style="zoom:16%;" />
+<img src="fig/gpt_neo_contribution2.png" alt="gpt_neo_contribution2" width="600px" />
 
 #### 3. Subtraction of the certain amount on the first principal component
 
@@ -127,7 +134,7 @@ python spectral_analyze.py --analyze_type=change
 
 Then you can get a figure as follows:
 
-<img src="fig/gpt_neo_change1st_v1_-50.02.png" alt="gpt_neo_change1st_v1_-50.02" style="zoom:16%;" />
+<img src="fig/gpt_neo_change1st_v1_-50.02.png" alt="gpt_neo_change1st_v1_-50.02" width="300px" />
 
 This image draws the text `YMCA in South Australia` and $v_1$ calculated by the first step by default
 
@@ -137,4 +144,4 @@ The `text`, `lambda_type` and `lambda_value` field can be used to modify the def
 python spectral_analyze.py --analyze_type=change --text="I like apple and banana" --lambda_type=custom --lambda_value=-48.0
 ```
 
-<img src="fig/gpt_neo_change1st_custom_-48.00.png" alt="gpt_neo_change1st_custom_-48.00" style="zoom:16%;" />
+<img src="fig/gpt_neo_change1st_custom_-48.00.png" alt="gpt_neo_change1st_custom_-48.00" width="300px" />

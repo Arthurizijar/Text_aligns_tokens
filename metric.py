@@ -18,15 +18,6 @@ def calculate_similarity(embeddings, embeddings_layers):
     return cos_similarities, dot_products, norm_embeddings
 
 
-def get_decode_content(tokenizer, logits, k=5):
-    topk_tokens = []
-    _, topk_indices = torch.topk(logits, k)
-    for i in range(len(topk_indices)):
-        each_dot_max_tokens = [tokenizer.convert_ids_to_tokens(idx.item()) for idx in topk_indices[i]]
-        topk_tokens.append(each_dot_max_tokens)
-    return topk_tokens
-
-
 
 # def compare_sentence_decode():
 #     texts = ["I like apple", "I do not like apple"]

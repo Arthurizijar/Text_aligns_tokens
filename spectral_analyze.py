@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-import seaborn as sns
-from torch import nn
 import torch
 import pickle
 import os
@@ -12,8 +9,7 @@ from data import get_text_similarity_data
 from embedding import get_embeddings, get_logits
 from metric import calculate_similarity, get_decode_content
 from utils import check_args
-
-default_alpha = {"gpt_neo": -47, "prompt_opt": -31, "prompt_llama": -105, "mistral": 0.59}
+from plot import draw_multibar_figure, draw_figure
 
 
 def get_top_eigen_vector(data_name, model_name, data_size):
@@ -74,36 +70,6 @@ def get_prob_dist(args, top1_eigenvec):
     top_K_logits, top_K_indices = torch.topk(logits, args.k)
     aligned_tokens = [tokenizer.convert_ids_to_tokens(idx.item()) for idx in top_K_indices[0]]
     return aligned_tokens, top_K_logits[0].numpy().tolist()
-
-
-def draw_multibar_figure(x_list, y_list, label_list, path, share_x=False):
-    
-    sns.set_theme(style="whitegrid")
-    f, axs = plt.subplots(len(x_list), 1, figsize=(9*len(x_list)+1, 8), sharex=False)
-    if len(x_list) == 1:
-        axs = [axs]
-    for i, (x, y, label) in enumerate(zip(x_list, y_list, label_list)):
-        if share_x and i != 0:
-            sorted_combined = sorted(zip(y, x), key=lambda x: x[0], reverse=True)
-            y = [item[0] for item in sorted_combined]
-            x = [item[1] for item in sorted_combined]
-        sns.barplot(x=x, y=y, hue=x, palette="coolwarm", ax=axs[i])
-        axs[i].axhline(0, color="k", clip_on=False)
-        axs[i].set_ylabel(label)
-
-    leg = plt.legend()
-    axs[-1].get_legend().remove()
-    plt.savefig(path, bbox_inches='tight', dpi=300)
-
-
-def draw_figure(data, path):
-    sns.set_theme(style="whitegrid")
-    plt.figure(figsize=(6, 6))
-    sns.lineplot(x=range(len(data)), y=data)
-    plt.xlabel('$i$ (Dismention)')
-    plt.ylabel('$v_i$ (Variation)')
-    plt.title('Contribution to the aligned tokens')
-    plt.savefig(path, bbox_inches='tight', dpi=300)
     
     
     
